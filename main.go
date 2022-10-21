@@ -29,7 +29,6 @@ func main() {
 	htu21d := &htu21d2.HTU21D{I2cHandle: i2cHandle, SensorName: "Schlafzimmer"}
 
 	for {
-
 		_, err = htu21d.SoftRest()
 		if err != nil {
 			log.Fatal(err)
@@ -54,5 +53,7 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Println("Result submitted")
+
+		time.Sleep(30 * time.Second)
 	}
 }

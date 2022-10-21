@@ -43,7 +43,7 @@ func main() {
 	client := influxdb2.NewClient("http://localhost:8086", "super-secret-token")
 	writeAPI := client.WriteAPIBlocking("my-org", "smart")
 	p := influxdb2.NewPointWithMeasurement("sensor").
-		AddTag("sensor-name", result.SensorName).
+		AddTag("location", result.SensorName).
 		AddField("temp", result.Temp).
 		AddField("humid", result.Humid).
 		SetTime(time.Now())

@@ -1,4 +1,4 @@
-package main
+package htu21d
 
 import (
 	"encoding/binary"
@@ -15,11 +15,18 @@ const (
 )
 
 type HTU21D struct {
-	i2cHandle *i2c.I2C
+	I2cHandle  *i2c.I2C
+	SensorName string
+}
+
+type SensorResult struct {
+	Temp       float64
+	Humid      float64
+	SensorName string
 }
 
 func (d *HTU21D) SoftRest() (int, error) {
-	n, err := d.i2cHandle.WriteBytes([]byte{SOFT_RESET})
+	n, err := d.I2cHandle.WriteBytes([]byte{SOFT_RESET})
 	if err != nil {
 		return n, err
 	}
@@ -36,7 +43,7 @@ func (d *HTU21D) ReadTemp() (float64, error) {
 
 	time.Sleep(SLEEP_READ)
 	buf := make([]byte, 3)
-	_, err = d.i2cHandle.ReadBytes(buf)
+	_, err = d.I2cHandle.ReadBytes(buf)
 	if err != nil {
 		return 0.0, err
 	}
@@ -55,7 +62,7 @@ func (d *HTU21D) ReadHumid() (float64, error) {
 
 	time.Sleep(SLEEP_READ)
 	buf := make([]byte, 3)
-	_, err = d.i2cHandle.ReadBytes(buf)
+	_, err = d.I2cHandle.ReadBytes(buf)
 	if err != nil {
 		return 0, err
 	}
@@ -66,8 +73,30 @@ func (d *HTU21D) ReadHumid() (float64, error) {
 	return humid, nil
 }
 
+func (d *HTU21D) GetResult() (*SensorResult, error) {
+	_, err := d.SoftRest()
+	if err != nil {
+		return nil, err
+	}
+
+	humid, err := d.ReadHumid()
+	if err != nil {
+		return nil, err
+	}
+	temp, err := d.ReadTemp()
+	if err != nil {
+		return nil, err
+	}
+
+	return &SensorResult{
+		SensorName: d.SensorName,
+		Humid:      humid,
+		Temp:       temp,
+	}, nil
+}
+
 func (d *HTU21D) triggerTemp() (int, error) {
-	n, err := d.i2cHandle.WriteBytes([]byte{READ_TEMP_NH})
+	n, err := d.I2cHandle.WriteBytes([]byte{READ_TEMP_NH})
 	if err != nil {
 		return n, err
 	}
@@ -75,7 +104,7 @@ func (d *HTU21D) triggerTemp() (int, error) {
 }
 
 func (d *HTU21D) triggerHumid() (int, error) {
-	n, err := d.i2cHandle.WriteBytes([]byte{READ_HUMID_NH})
+	n, err := d.I2cHandle.WriteBytes([]byte{READ_HUMID_NH})
 	if err != nil {
 		return n, err
 	}

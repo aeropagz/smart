@@ -1,4 +1,4 @@
-module github.com/aeropagz/htu21d
+module github.com/aeropagz/smart
 
 go 1.19
 

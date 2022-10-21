@@ -1,6 +1,7 @@
 package main
 
 import (
+	htu21d2 "github.com/aeropagz/smart/htu21d"
 	"github.com/d2r2/go-i2c"
 	"github.com/d2r2/go-logger"
 	"log"
@@ -21,22 +22,17 @@ func main() {
 	defer i2cHandle.Close()
 	logger.ChangePackageLogLevel("i2cHandle", logger.DebugLevel)
 
-	htu21d := &HTU21D{i2cHandle: i2cHandle}
+	htu21d := &htu21d2.HTU21D{I2cHandle: i2cHandle, SensorName: "Schlafzimmer"}
 
 	_, err = htu21d.SoftRest()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	temp, err := htu21d.ReadTemp()
+	result, err := htu21d.GetResult()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	humid, err := htu21d.ReadHumid()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Temp: %f, Humid: %f", temp, humid)
+	log.Printf("%s	Temp: %f, Humid: %f", result.SensorName, result.Temp, result.Humid)
 }

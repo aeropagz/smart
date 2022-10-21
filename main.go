@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
+	"log"
+	"time"
+
 	htu21d2 "github.com/aeropagz/smart/htu21d"
 	"github.com/d2r2/go-i2c"
 	"github.com/d2r2/go-logger"
-	"log"
+	"github.com/influxdata/influxdb-client-go/v2"
 )
 
 var lg = logger.NewPackageLogger("main",
@@ -35,4 +39,16 @@ func main() {
 	}
 
 	log.Printf("%s	Temp: %f, Humid: %f", result.SensorName, result.Temp, result.Humid)
+
+	client := influxdb2.NewClient("http://localhost:8086", "super-secret-token")
+	writeAPI := client.WriteAPIBlocking("my-org", "smart")
+	p := influxdb2.NewPointWithMeasurement("sensor").
+		AddTag("sensor-name", result.SensorName).
+		AddField("temp", result.Temp).
+		AddField("humid", result.Humid).
+		SetTime(time.Now())
+	err = writeAPI.WritePoint(context.Background(), p)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

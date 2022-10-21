@@ -28,27 +28,31 @@ func main() {
 
 	htu21d := &htu21d2.HTU21D{I2cHandle: i2cHandle, SensorName: "Schlafzimmer"}
 
-	_, err = htu21d.SoftRest()
-	if err != nil {
-		log.Fatal(err)
-	}
+	for {
 
-	result, err := htu21d.GetResult()
-	if err != nil {
-		log.Fatal(err)
-	}
+		_, err = htu21d.SoftRest()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	log.Printf("%s	Temp: %f, Humid: %f", result.SensorName, result.Temp, result.Humid)
+		result, err := htu21d.GetResult()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	client := influxdb2.NewClient("http://localhost:8086", "super-secret-token")
-	writeAPI := client.WriteAPIBlocking("my-org", "smart")
-	p := influxdb2.NewPointWithMeasurement("sensor").
-		AddTag("location", result.SensorName).
-		AddField("temp", result.Temp).
-		AddField("humid", result.Humid).
-		SetTime(time.Now())
-	err = writeAPI.WritePoint(context.Background(), p)
-	if err != nil {
-		log.Fatal(err)
+		log.Printf("%s	Temp: %f, Humid: %f", result.SensorName, result.Temp, result.Humid)
+
+		client := influxdb2.NewClient("http://localhost:8086", "super-secret-token")
+		writeAPI := client.WriteAPIBlocking("my-org", "smart")
+		p := influxdb2.NewPointWithMeasurement("sensor").
+			AddTag("location", result.SensorName).
+			AddField("temp", result.Temp).
+			AddField("humid", result.Humid).
+			SetTime(time.Now())
+		err = writeAPI.WritePoint(context.Background(), p)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("Result submitted")
 	}
 }
